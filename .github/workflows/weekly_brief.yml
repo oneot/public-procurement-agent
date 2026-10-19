@@ -1,0 +1,72 @@
+# 주간 K-12 조달 브리핑 — 나라장터 입찰공고 수집 → HTML 브리핑 생성 → 이메일 발송
+#
+# - 예약 실행(매주 월 09:00 KST)은 항상 발송합니다.
+# - 수동 실행은 기본이 dry run(수집·생성만)이며, send_email 을 체크해야 발송합니다.
+# - 공개 저장소이므로 리포트/브리핑을 아티팩트로 올리지 않고, 비밀값은 필요한 단계에만 전달합니다.
+name: Weekly K-12 Procurement Brief
+
+on:
+  schedule:
+    - cron: "0 0 * * 1" # 매주 월요일 00:00 UTC = 09:00 KST
+  workflow_dispatch:
+    inputs:
+      send_email:
+        description: "이메일 발송 (체크하지 않으면 수집·생성만 하는 dry run)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  brief:
+    # 포크에서는 실행하지 않습니다. 포크/복제해 쓰려면 저장소 이름을 바꾸세요.
+    if: github.repository == 'oneot/public-procurement-agent-kr'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TZ: Asia/Seoul
+      # 브랜딩(선택) — 저장소 Secrets 를 Variables 보다 우선 사용하고, 둘 다 없으면 기본 문구를 씁니다.
+      # Variables 값은 공개 로그에 그대로 출력되므로 공개하고 싶지 않은 값은 Secrets 로 등록하세요.
+      BRIEF_BRAND_NAME: ${{ secrets.BRIEF_BRAND_NAME || vars.BRIEF_BRAND_NAME }}
+      BRIEF_LOGO_URL: ${{ secrets.BRIEF_LOGO_URL || vars.BRIEF_LOGO_URL }}
+      BRIEF_LOGO_MARK_COLORS: ${{ secrets.BRIEF_LOGO_MARK_COLORS || vars.BRIEF_LOGO_MARK_COLORS }}
+      BRIEF_EYEBROW: ${{ secrets.BRIEF_EYEBROW || vars.BRIEF_EYEBROW }}
+      BRIEF_TITLE: ${{ secrets.BRIEF_TITLE || vars.BRIEF_TITLE }}
+      BRIEF_SECTION_LABEL: ${{ secrets.BRIEF_SECTION_LABEL || vars.BRIEF_SECTION_LABEL }}
+      BRIEF_FOOTER_TEXT: ${{ secrets.BRIEF_FOOTER_TEXT || vars.BRIEF_FOOTER_TEXT }}
+      BRIEF_EMAIL_SUBJECT: ${{ secrets.BRIEF_EMAIL_SUBJECT || vars.BRIEF_EMAIL_SUBJECT }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          python-version: "3.13"
+
+      - name: Install
+        run: uv sync --locked --no-dev --extra send
+
+      - name: Collect bids and build the brief
+        env:
+          NARA_SERVICE_KEY: ${{ secrets.NARA_SERVICE_KEY }}
+        run: uv run --no-sync procurement-agent run
+
+      - name: Send email (Azure Communication Services)
+        if: github.event_name == 'schedule' || inputs.send_email
+        env:
+          ACS_CONNECTION_STRING: ${{ secrets.ACS_CONNECTION_STRING }}
+          MAIL_SENDER: ${{ secrets.MAIL_SENDER }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: uv run --no-sync procurement-agent send
+
+      - name: Dry run summary
+        if: github.event_name != 'schedule' && !inputs.send_email
+        run: echo "::notice title=Dry run::이메일을 발송하지 않았습니다 (send_email=false). 수집·브리핑 생성만 확인했습니다."

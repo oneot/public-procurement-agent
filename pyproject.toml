@@ -1,0 +1,97 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "public-procurement-agent"
+version = "1.0.0"
+description = "나라장터(조달청) 입찰공고에서 K-12 교육기관 × AI/SW/클라우드/보안/PC 사업 기회를 수집해 주간 이메일 브리핑을 만드는 도구"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Joowon Jeong" }]
+keywords = ["procurement", "g2b", "narajangter", "data.go.kr", "k-12", "edtech", "email"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Natural Language :: Korean",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Office/Business",
+    "Typing :: Typed",
+]
+dependencies = [
+    "httpx>=0.28",
+    "jinja2>=3.1.6",
+    "python-dotenv>=1.1",
+    "tzdata>=2024.1; sys_platform == 'win32'",
+]
+
+[project.optional-dependencies]
+xlsx = ["openpyxl>=3.1.5"]
+send = ["azure-communication-email>=1.0"]
+
+[project.scripts]
+procurement-agent = "public_procurement_agent.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/oneot/public-procurement-agent-kr"
+Source = "https://github.com/oneot/public-procurement-agent-kr"
+Issues = "https://github.com/oneot/public-procurement-agent-kr/issues"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18",
+    "pytest>=8.4",
+    "ruff>=0.14",
+    "types-openpyxl>=3.1.5",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/public_procurement_agent"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "README.md", "LICENSE", "CONTRIBUTING.md", "SECURITY.md", ".env.example"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "SIM", # flake8-simplify
+    "PTH", # flake8-use-pathlib
+    "RUF", # ruff-specific
+]
+# 한국어 문자열·주석의 '·', '×', '→' 등은 의도된 문자이므로 혼동 문자 경고를 끕니다.
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src", "tests"]
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = ["azure.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
+xfail_strict = true

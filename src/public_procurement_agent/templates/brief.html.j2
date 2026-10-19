@@ -1,0 +1,119 @@
+{#- 주간 K-12 조달 브리핑 이메일.
+    이메일 클라이언트 호환을 위해 표 기반 레이아웃과 인라인 스타일만 사용합니다.
+    브랜딩 문구는 설정(branding)에서 주입되며, 비어 있으면 해당 영역을 생략합니다. -#}
+{% macro logo_mark() -%}
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="9" height="9" style="width:9px;height:9px;background:{{ mark_colors[0] }};font-size:1px;line-height:1px;">&nbsp;</td><td width="2" style="width:2px;font-size:1px;line-height:1px;">&nbsp;</td><td width="9" height="9" style="width:9px;height:9px;background:{{ mark_colors[1] }};font-size:1px;line-height:1px;">&nbsp;</td></tr><tr><td colspan="3" height="2" style="height:2px;font-size:1px;line-height:1px;">&nbsp;</td></tr><tr><td width="9" height="9" style="width:9px;height:9px;background:{{ mark_colors[2] }};font-size:1px;line-height:1px;">&nbsp;</td><td width="2" style="width:2px;font-size:1px;line-height:1px;">&nbsp;</td><td width="9" height="9" style="width:9px;height:9px;background:{{ mark_colors[3] }};font-size:1px;line-height:1px;">&nbsp;</td></tr></table>
+{%- endmacro %}
+{% macro brand_logo(size, color) -%}
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="display:inline-block;vertical-align:middle;border-collapse:collapse;"><tr>
+{%- if mark_colors %}<td style="vertical-align:middle;padding-right:8px;">{{ logo_mark() }}</td>{% endif %}
+{%- if logo_url %}<td style="vertical-align:middle;padding-right:8px;"><img src="{{ logo_url }}" alt="{{ brand_name }}" height="{{ size + 7 }}" style="display:block;height:{{ size + 7 }}px;width:auto;border:0;"></td>{% endif %}
+{%- if brand_name %}<td style="vertical-align:middle;font-size:{{ size }}px;font-weight:700;color:{{ color }};letter-spacing:.02em;white-space:nowrap;">{{ brand_name }}</td>{% endif %}
+</tr></table>
+{%- endmacro %}
+{% macro pill(text) -%}
+<span style="display:inline-block;background:#ffffff;border:1px solid #eae7f2;border-radius:999px;padding:6px 11px;margin:0 4px 6px;font-size:11px;font-weight:600;color:#334155;white-space:nowrap;box-shadow:0 2px 7px rgba(120,90,180,.12);">{{ text }}</span>
+{%- endmacro %}
+{% macro badge(b) -%}
+<span style="display:inline-block;background:{{ b.color }};background:linear-gradient(135deg,{{ b.color }},{{ b.color_end }});color:#fff;font-size:11px;font-weight:700;letter-spacing:.3px;padding:3px 9px;border-radius:999px;margin-right:5px;">{{ b.topic }}</span>
+{%- endmacro %}
+{% macro kpi(k) -%}
+<div class="kpi-cell" style="display:inline-block;width:25%;vertical-align:top;box-sizing:border-box;padding:4px;"><div style="background:#ffffff;background:linear-gradient(150deg,rgba(255,255,255,.95),rgba(245,240,255,.85));border:1px solid #eef0f6;border-radius:14px;padding:15px 6px;box-shadow:0 3px 12px rgba(120,90,180,.10);"><div style="font-size:23px;font-weight:800;color:#111827;line-height:1;white-space:nowrap;">{{ k.value }}</div><div style="font-size:11px;color:#64748b;margin-top:7px;line-height:1.3;">{{ k.label }}</div></div></div>
+{%- endmacro %}
+{% set side = "border-left:1px solid rgba(230,233,240,.9);border-right:1px solid rgba(230,233,240,.9);" %}
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ subject }}</title><style>
+  @media only screen and (max-width:480px){
+    .kpi-cell{ width:50% !important; }
+    .eyebrow{ font-size:9px !important; letter-spacing:.2px !important; white-space:nowrap !important; }
+    .title{ font-size:20px !important; white-space:nowrap !important; }
+    .cardinfo{ font-size:12px !important; }
+    .cardbudget{ font-size:13px !important; }
+    .cardbtn a{ padding:7px 12px !important; font-size:11px !important; }
+    .seclabel{ font-size:11px !important; white-space:nowrap !important; }
+    .footnote{ font-size:9px !important; white-space:nowrap !important; }
+  }
+</style></head>
+<body style="margin:0;padding:0;background:#eef2fb;font-family:'Segoe UI','Malgun Gothic',Apple SD Gothic Neo,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#eef2fb" style="background:radial-gradient(820px 440px at 100% -8%,rgba(123,47,190,.10),transparent 60%),radial-gradient(760px 460px at 0% 108%,rgba(255,107,157,.10),transparent 60%),linear-gradient(145deg,#EEF2FF 0%,#F5F0FF 42%,#FFF0F8 100%);padding:26px 12px;">
+<tr><td align="center">
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;box-shadow:0 12px 40px rgba(120,90,180,.14);border-radius:16px;">
+
+    <!-- 헤더 (라이트 + 그라데이션 타이틀) -->
+    <tr><td bgcolor="#ffffff" style="background:linear-gradient(135deg,#F8F9FF 0%,#FBF3FB 100%);
+      border-radius:16px 16px 0 0;padding:22px 20px;">
+{% if has_logo %}
+      <div style="margin-bottom:16px;">{{ brand_logo(15, "#3a5070") }}</div>
+{% endif %}
+      <div class="eyebrow" style="font-size:12px;font-weight:700;color:#111827;letter-spacing:1.4px;text-transform:uppercase;">{{ eyebrow }}</div>
+      <div class="title" style="font-size:33px;font-weight:800;line-height:1.22;margin-top:10px;color:#000000;">{{ title }}</div>
+      <div style="margin-top:15px;text-align:center;">{{ pill("📅 " ~ date_text) }}{{ pill("📍 나라장터 API") }}{{ pill("🎯 " ~ topic_label ~ " 필터") }}</div>
+    </td></tr>
+    <!-- 그라데이션 액센트 라인 -->
+    <tr><td bgcolor="#7B2FBE" style="height:2px;background:#7B2FBE;background:linear-gradient(135deg,#0078D4 0%,#7B2FBE 50%,#FF6B9D 100%);font-size:0;line-height:0;">&nbsp;</td></tr>
+
+    <!-- KPI (반응형 2×2, 숫자 검정·라벨 회색) -->
+    <tr><td bgcolor="#f7f9fc" style="background:rgba(248,249,255,.75);padding:10px 6px 4px;{{ side }}">
+      <div style="font-size:0;text-align:center;">{% for k in kpis %}{{ kpi(k) }}{% endfor %}</div>
+    </td></tr>
+
+    <!-- 섹션 라벨 -->
+    <tr><td bgcolor="#f7f9fc" style="background:rgba(248,249,255,.6);padding:16px 20px 12px;{{ side }}">
+      <div class="seclabel" style="font-size:15px;font-weight:700;color:#475569;line-height:1.5;">{{ section_label }}</div>
+    </td></tr>
+
+    <!-- 카드 목록 -->
+    <tr><td bgcolor="#f7f9fc" style="background:rgba(248,249,255,.6);padding:0 16px 6px;{{ side }}">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+{% for card in cards %}
+        <tr><td style="padding:0 0 13px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff"
+            style="background:rgba(255,255,255,.85);border:1px solid rgba(226,232,240,.95);
+            border-radius:13px;box-shadow:0 5px 18px rgba(120,90,180,.10);">
+            <tr><td style="padding:16px 18px;">
+              <div style="margin-bottom:9px;">{% for b in card.badges %}{{ badge(b) }}{% endfor +%}
+                <span style="display:inline-block;border:1px solid #d7dbe3;color:#64748b;
+                  font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;">{{ card.category }}</span></div>
+              <div style="font-size:15px;font-weight:700;color:#111827;line-height:1.5;margin-bottom:6px;">{{ card.name }}</div>
+              <div style="font-size:12px;color:#94a3b8;margin-bottom:13px;line-height:1.5;">{{ card.customer }}</div>
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
+                <td class="cardinfo" style="font-size:13px;color:#475569;line-height:1.6;white-space:nowrap;">
+                  <span class="cardbudget" style="font-size:15px;font-weight:800;color:#111827;">{{ card.budget }}</span>
+                  &nbsp;&nbsp;<span style="color:#cbd5e1;">|</span>&nbsp;&nbsp;
+                  마감 {{ card.due }} <span style="color:{{ card.urgency_color }};font-weight:700;">· {{ card.urgency_label }}</span>
+                </td>
+                <td class="cardbtn" align="right" style="padding-left:8px;">
+                  <a href="{{ card.url }}" style="display:inline-block;background:#0078D4;background:linear-gradient(135deg,#0078D4,#7B2FBE);
+                    color:#fff;font-size:12px;font-weight:800;text-decoration:none;padding:8px 15px;
+                    border-radius:9px;white-space:nowrap;box-shadow:0 4px 12px rgba(123,47,190,.28);">공고 보기 →</a>
+                </td>
+              </tr></table>
+            </td></tr>
+          </table>
+        </td></tr>
+{% else %}
+        <tr><td style="color:#64748b;font-size:14px;padding:10px;">이번주 마감 전 신규 기회가 없습니다.</td></tr>
+{% endfor %}
+      </table>
+    </td></tr>
+
+    <!-- 푸터 (라이트, 회색 텍스트) -->
+    <tr><td bgcolor="#f2f4fb" style="background:linear-gradient(135deg,#F5F5FF 0%,#FBF2F8 100%);
+      border-radius:0 0 16px 16px;padding:20px 24px 22px;{{ side }}border-bottom:1px solid rgba(230,233,240,.9);">
+      <div class="footnote" style="font-size:11px;color:#64748b;line-height:1.7;text-align:center;">
+        필터: {{ audience_label }} × {{ topic_label }}<br>
+        출처: 조달청 나라장터 입찰공고정보서비스 기준</div>
+{% if has_logo or footer_text %}
+      <div style="text-align:center;margin-top:16px;padding-top:15px;border-top:1px solid rgba(226,232,240,.85);">
+{% if has_logo %}
+        {{ brand_logo(13, "#3a5070") }}
+{% endif %}
+{% if footer_text %}
+        <div style="font-size:11px;color:#94a3b8;margin-top:10px;">{{ footer_text }}</div>
+{% endif %}
+      </div>
+{% endif %}
+    </td></tr>
+
+  </table>
+</td></tr></table></body></html>
